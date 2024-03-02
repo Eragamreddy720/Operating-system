@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PROCESSES 100
+
+// Process structure
+struct Process {
+    int id;
+    int priority;
+};
+
+// Max-heap structure
+struct MaxHeap {
+    struct Process* heap[MAX_PROCESSES];
+    int size;
+};
+
+// Function to initialize the max-heap
+void initMaxHeap(struct MaxHeap* maxHeap) {
+    maxHeap->size = 0;
+}
+
+// Function to swap two processes in the max-heap
+void swap(struct Process** a, struct Process** b) {
+    struct Process* temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Function to insert a process into the max-heap
+void insert(struct MaxHeap* maxHeap, struct Process* process) {
+    int i = maxHeap->size;
+    maxHeap->heap[i] = process;
+    maxHeap->size++;
+
+    // Heapify up
+    while (i > 0 && maxHeap->heap[(i - 1) / 2]->priority < maxHeap->heap[i]->priority) {
+        swap(&maxHeap->heap[(i - 1) / 2], &maxHeap->heap[i]);
+        i = (i - 1) / 2;
+    }
+}
+
+// Function to extract the process with the highest priority from the max-heap
+struct Process* extractMax(struct MaxHeap* maxHeap) {
+    if (maxHeap->size == 0) {
+        return NULL;
+    }
+
+    struct Process* maxProcess = maxHeap->heap[0];
+    maxHeap->size--;
+
+    // Move the last process to the root
+    maxHeap->heap[0] = maxHeap->heap[maxHeap->size];
+
+    // Heapify down
+    int i = 0;
+    while (2 * i + 1 < maxHeap->size) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int largest = i;
+
+        if (left < maxHeap->size && maxHeap->heap[left]->priority > maxHeap->heap[largest]->priority) {
+            largest = left;
+        }
+        if (right < maxHeap->size && maxHeap->heap[right]->priority > maxHeap->heap[largest]->priority) {
+            largest = right;
+        }
+
+        if (largest != i) {
+            swap(&maxHeap->heap[i], &maxHeap->heap[largest]);
+            i = largest;
+        } else {
+            break;
+        }
+    }
+
+    return maxProcess;
+}
+
+// Function to print the processes in the max-heap
+void printMaxHeap(struct MaxHeap* maxHeap) {
+    for (int i = 0; i < maxHeap->size; i++) {
+        printf("Process ID: %d, Priority: %d\n", maxHeap->heap[i]->id, maxHeap->heap[i]->priority);
+    }
+}
+
+int main() {
+    struct MaxHeap maxHeap;
+    initMaxHeap(&maxHeap);
+
+    // Insert processes into the max-heap
+    struct Process p1 = {1, 10};
+    insert(&maxHeap, &p1);
+
+    struct Process p2 = {2, 5};
+    insert(&maxHeap, &p2);
+
+    struct Process p3 = {3, 15};
+    insert(&maxHeap, &p3);
+
+    struct Process p4 = {4, 7};
+    insert(&maxHeap, &p4);
+
+    // Print the processes in the max-heap
+    printf("Processes in the max-heap:\n");
+    printMaxHeap(&maxHeap);
+
+    // Extract the process with the highest priority
+    struct Process* maxProcess = extractMax(&maxHeap);
+    if (maxProcess != NULL) {
+        printf("\nProcess with the highest priority:\n");
+        printf("Process ID: %d, Priority: %d\n", maxProcess->id, maxProcess->priority);
+    } else {
+        printf("\nNo processes in the max-heap\n");
+    }
+
+    return 0;
+}
